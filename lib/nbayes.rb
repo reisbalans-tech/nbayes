@@ -311,27 +311,28 @@ module NBayes
       data.reset_after_import
     end
 
-    def self.from_yml(yml_data)
-      nbayes = YAML.load(yml_data)
+    def self.from_yml(yml_data, permitted_classes: [])
+      permitted_classes = [Symbol, NBayes::Base, NBayes::Vocab, NBayes::Data] if permitted_classes.none?
+      nbayes = YAML.load(yml_data, permitted_classes: permitted_classes)
       nbayes.reset_after_import()  # yaml does not properly set the defaults on the Hashes
       nbayes
     end
 
     # Loads class instance from a data file (e.g., yaml)
-    def self.from(yml_file)
+    def self.from(yml_file, permitted_classes: [])
       File.open(yml_file, "rb") do |file|
-        self.from_yml(file.read)
+        self.from_yml(file.read, permitted_classes: permitted_classes)
       end
     end
 
     # Load class instance
-    def load(yml)
+    def load(yml, permitted_classes: [])
       if yml.nil?
         nbayes = NBayes::Base.new
       elsif yml[0..2] == "---"
-        nbayes = self.class.from_yml(yml)
+        nbayes = self.class.from_yml(yml, permitted_classes: permitted_classes)
       else
-        nbayes = self.class.from(yml)
+        nbayes = self.class.from(yml, permitted_classes: permitted_classes)
       end
       nbayes
     end
